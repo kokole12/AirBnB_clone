@@ -1,9 +1,9 @@
 #!/usr/bin/python3
+"""Creates a unique file storage for the app.
 """
-Create a unique FileStorage instance for your application
-"""
-from .engine.file_storage import FileStorage
 
+
+from models.engine.file_storage import FileStorage
 
 storage = FileStorage()
 storage.reload()

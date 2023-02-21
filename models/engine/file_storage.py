@@ -1,9 +1,9 @@
 #!/usr/bin/python3
-"""
-Serializes instances to a JSON file and deserializes JSON file to instances
+"""Defines a class FileStorage.
 """
 import json
-from datetime import datetime
+import os
+from models.base_model import BaseModel
 from models.user import User
 from models.state import State
 from models.city import City
@@ -12,55 +12,67 @@ from models.place import Place
 from models.review import Review
 
 
-class FileStorage:
+class FileStorage():
+    """Class that serializes instances to a JSON file and deserializes
+    JSON file to instances.
     """
-    Serializes instances to a JSON file and deserializes JSON file to instances
-    """
-    __file_path = 'file.json'
+    __file_path = "file.json"
     __objects = {}
 
+    def __init__(self):
+        """Creates new instances of class.
+        """
+        pass
+
     def all(self):
-        return FileStorage.__objects
+        """Returns the dictionary objects.
+
+        Returns:
+            dict: objects.
+        """
+        return self.__objects
 
     def new(self, obj):
-        key = type(obj).__name__ + '.' + obj.id
-        FileStorage.__objects[key] = obj
+        """Sets in __objects the obj with key <obj class name>.id.
+
+        Args:
+            obj (any): object.
+        """
+        key = obj.__class__.__name__ + "." + obj.id
+        self.__objects[key] = obj
 
     def save(self):
+        """Serializes __objects to the JSON file (path: __file_path).
         """
-        serializes FileStroage.__objects
-        """
-        with open(FileStorage.__file_path, 'w+') as f:
-            dictofobjs = {}
-            for key, value in FileStorage.__objects.items():
-                dictofobjs[key] = value.to_dict()
-            json.dump(dictofobjs, f)
+        dictionary = {}
+
+        for key, value in FileStorage.__objects.items():
+            dictionary[key] = value.to_dict()
+
+        with open(FileStorage.__file_path, 'w', encoding="utf-8") as myFile:
+            json.dump(dictionary, myFile)
 
     def reload(self):
-        """
-        deserializes instances got from json file
+        """Deserializes the JSON file to __objects only if the JSON file
+        (__file_path) exists ; otherwise, do nothing. If the file doesn’t
+        exist, no exception should be raised)
         """
         try:
-            with open(FileStorage.__file_path, 'r') as f:
-                dictofobjs = json.loads(f.read())
-                from models.base_model import BaseModel
-                from models.user import User
-                for key, value in dictofobjs.items():
-                    if value['__class__'] == 'BaseModel':
-                        FileStorage.__objects[key] = BaseModel(**value)
-                    elif value['__class__'] == 'User':
-                        FileStorage.__objects[key] = User(**value)
-                    elif value['__class__'] == 'Place':
-                        FileStorage.__objects[key] = Place(**value)
-                    elif value['__class__'] == 'State':
-                        FileStorage.__objects[key] = State(**value)
-                    elif value['__class__'] == 'City':
-                        FileStorage.__objects[key] = City(**value)
-                    elif value['__class__'] == 'Amenity':
-                        FileStorage.__objects[key] = Amenity(**value)
-                    elif value['__class__'] == 'Review':
-                        FileStorage.__objects[key] = Review(**value)
+            with open(self.__file_path, 'r', encoding='utf-8') as myFile:
+                my_obj_dump = myFile.read()
+        except Exception:
+            return
+        objects = eval(my_obj_dump)
+        for (key, value) in objects.items():
+            objects[key] = eval(key.split('.')[0] + '(**value)')
+        self.__objects = objects
 
-        except FileNotFoundError:
-            pass
-  
+    def delete(self, obj):
+        """Deletes obj from __objects
+        """
+        try:
+            key = obj.__class__.__name__ + '.' + str(obj.id)
+            del self.__objects[key]
+            return True
+        except Exception:
+            return False

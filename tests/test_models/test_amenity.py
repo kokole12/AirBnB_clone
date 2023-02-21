@@ -1,53 +1,91 @@
 #!/usr/bin/python3
-"""Unittest module for the Amenity Class."""
-
+""" Defines a class TestAmenity for Amenity module. """
 import unittest
-from datetime import datetime
-import time
 from models.amenity import Amenity
-import re
-import json
-from models.engine.file_storage import FileStorage
-import os
-from models import storage
 from models.base_model import BaseModel
+import datetime
 
 
 class TestAmenity(unittest.TestCase):
+    """Defines tests for Amenity Class"""
 
-    """Test Cases for the Amenity class."""
+    @classmethod
+    def setUp(cls):
+        """Runs for each test case.
+        """
+        cls.amenity1 = Amenity()
+        cls.amenity1.name = "Parking"
 
-    def setUp(self):
-        """Sets up test methods."""
-        pass
+    @classmethod
+    def tearDown(cls):
+        """Cleans up after each test.
+        """
+        del cls.amenity1
 
-    def tearDown(self):
-        """Tears down test methods."""
-        self.resetStorage()
-        pass
+    def test_class_exists(self):
+        """Tests if class exists.
+        """
+        result = "<class 'models.amenity.Amenity'>"
+        self.assertEqual(str(type(self.amenity1)), result)
 
-    def resetStorage(self):
-        """Resets FileStorage data."""
-        FileStorage._FileStorage__objects = {}
-        if os.path.isfile(FileStorage._FileStorage__file_path):
-            os.remove(FileStorage._FileStorage__file_path)
+    def test_inheritance(self):
+        """Test if Amenity is a subclass and instace of BaseModel.
+        """
+        self.assertIsInstance(self.amenity1, Amenity)
+        self.assertEqual(type(self.amenity1), Amenity)
+        self.assertEqual(issubclass(self.amenity1.__class__, BaseModel), True)
 
-    def test_8_instantiation(self):
-        """Tests instantiation of Amenity class."""
+    def test_types(self):
+        """Test if attributes type is correct.
+        """
+        self.assertIsInstance(self.amenity1.name, str)
+        self.assertEqual(type(self.amenity1.name), str)
+        self.assertIsInstance(self.amenity1.id, str)
+        self.assertEqual(type(self.amenity1.id), str)
+        self.assertIsInstance(self.amenity1.created_at, datetime.datetime)
+        self.assertIsInstance(self.amenity1.updated_at, datetime.datetime)
 
-        b = Amenity()
-        self.assertEqual(str(type(b)), "<class 'models.amenity.Amenity'>")
-        self.assertIsInstance(b, Amenity)
-        self.assertTrue(issubclass(type(b), BaseModel))
+    def test_save(self):
+        """Test if save method is working correctly after update.
+        """
+        self.amenity1.save()
+        self.assertNotEqual(self.amenity1.created_at, self.amenity1.updated_at)
 
-    def test_8_attributes(self):
-        """Tests the attributes of Amenity class."""
-        attributes = storage.attributes()["Amenity"]
-        o = Amenity()
-        for k, v in attributes.items():
-            self.assertTrue(hasattr(o, k))
-            self.assertEqual(type(getattr(o, k, None)), v)
+    def test_functions(self):
+        """Test if Amenity moudule is documented.
+        """
+        self.assertIsNotNone(Amenity.__doc__)
+
+    def test_has_attributes(self):
+        """Test if expected attributes exist.
+        """
+        self.assertTrue(hasattr(self.amenity1, 'name'))
+        self.assertTrue(hasattr(self.amenity1, 'id'))
+        self.assertTrue(hasattr(self.amenity1, 'created_at'))
+        self.assertTrue(hasattr(self.amenity1, 'updated_at'))
+
+    def test_to_dict(self):
+        """Test if to_dict method is working correctly.
+        """
+        my_model_json = self.amenity1.to_dict()
+        self.assertEqual(str, type(my_model_json['created_at']))
+        self.assertEqual(my_model_json['created_at'],
+                         self.amenity1.created_at.isoformat())
+        self.assertEqual(datetime.datetime, type(self.amenity1.created_at))
+        self.assertEqual(my_model_json['__class__'],
+                         self.amenity1.__class__.__name__)
+        self.assertEqual(my_model_json['id'], self.amenity1.id)
+
+    def test_unique_id(self):
+        """Test if each instance is created with a unique ID.
+        """
+        amenity2 = self.amenity1.__class__()
+        amenity3 = self.amenity1.__class__()
+        amenity4 = self.amenity1.__class__()
+        self.assertNotEqual(self.amenity1.id, amenity2.id)
+        self.assertNotEqual(self.amenity1.id, amenity3.id)
+        self.assertNotEqual(self.amenity1.id, amenity4.id)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
