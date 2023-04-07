@@ -3,7 +3,7 @@
 from fabric.api import *
 import os.path
 from os.path import exists
-
+env.hosts=["ip add", "ip add"]
 
 def do_deploy(archive_path):
 	if exists(archibe_path) is None:
